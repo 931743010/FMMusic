@@ -42,6 +42,19 @@
 //-----
 @protocol YXPlayerAssistantDelegate <NSObject>
 
+@optional
 - (void)showSongInfo:(NSDictionary *)songInfo;
+
+- (void)showLeftTime:(NSString *)time;
+
+- (void)startToPlay;
+
+- (void)nextSongButtonClicked;
+
+- (void)play;
+
+- (void)pause;
+
+- (void)waitForDownload;
 
 @end

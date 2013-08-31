@@ -8,10 +8,11 @@
 
 #import "YXCellView.h"
 #import "YXPlayerAssistant.h"
+#import "YXMusicPlayerView.h"
 #import <UIKit/UIKit.h>
 
 @class YXMusicPlayerView;
-@interface YXViewController : UIViewController <YXCellViewDelegate, YXPlayerAssistantDelegate>
+@interface YXViewController : UIViewController <YXCellViewDelegate, YXPlayerAssistantDelegate, YXMusicPlayerViewDelegate>
 
 @property(nonatomic, retain) UIScrollView *scrollView;
 @property(nonatomic, retain) UIView *topView;

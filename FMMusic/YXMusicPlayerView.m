@@ -10,9 +10,9 @@
 
 #define kScreenHeight [UIScreen mainScreen].bounds.size.height
 
-#define kImageViewHeight 300
+#define kImageViewHeight 320
 
-#define kAnimationDirectionHeightToTop 80
+#define kAnimationDirectionHeightToTop 63
 
 
 #import "YXMusicPlayerView.h"
@@ -20,10 +20,12 @@
 
 @interface YXMusicPlayerView()
 {
-    CGFloat oldY;
-    CGFloat currentY;
-    CGPoint center;
-    BOOL isDrag;
+    CGFloat _oldY;
+    CGFloat _currentY;
+    CGPoint _center;
+    BOOL _isDrag;
+    
+    CGFloat _keyHeightToMove;
 }
 @end
 
@@ -33,7 +35,7 @@
 - (void)dealloc
 {
     [_imageView release];
-    [_timeLabel release];
+    [_labelTime release];
     [super dealloc];
 }
 
@@ -51,7 +53,7 @@
 {
     // 图片
     _imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kImageViewHeight)];
-    _imageView.backgroundColor = [UIColor brownColor];
+    _imageView.image = [UIImage imageNamed:@"bg_player_cover_default.png"];
     _imageView.userInteractionEnabled = YES;
     [self addSubview:_imageView];
     
@@ -65,8 +67,8 @@
     CGFloat imageWidth = 80.0f;
     CGFloat imageHeight = 60.0f;
     CGFloat midMargin = (kScreenWidth - leftMargin * 2 - imageWidth * 3) / 2;
-    CGFloat heightY = controlView.frame.size.height - imageHeight - 44;
-    NSLog(@"%@", NSStringFromCGRect(self.frame));
+    CGFloat heightY = controlView.frame.size.height - imageHeight - 10;
+
     
     // 喜欢按钮
     UIButton *buttonLeft = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -94,31 +96,51 @@
     [controlView addSubview:buttonRight];
     
     // 播放按钮
-    CGFloat topMargin02 = 10.0f;
+    CGFloat topMargin02 = 5.0f;
     CGFloat leftMargin02 = 100.0f;
     CGFloat height02 = 32.0f;
     CGFloat width02 = 120.0f;
     
     // 播放按钮 120 x 32
-    UIButton *buttonPlay = [UIButton buttonWithType:UIButtonTypeCustom];
-    buttonPlay.frame = CGRectMake(leftMargin02, topMargin02, (kScreenWidth - leftMargin02 * 2), height02);
-    [buttonPlay setBackgroundImage:[UIImage imageNamed:@"ic_player_pause_off.png"] forState:UIControlStateNormal];
-    [buttonPlay setBackgroundImage:[UIImage imageNamed:@"ic_player_pause_off_highlight.png"] forState:UIControlStateHighlighted];
-    [buttonPlay setBackgroundImage:[UIImage imageNamed:@"ic_player_pause_on.png"] forState:UIControlStateSelected];
-    // 刚开始选中
-    buttonPlay.selected = YES;
-    [buttonPlay addTarget:self action:@selector(buttonPlayClicked:) forControlEvents:UIControlEventTouchUpInside];
-    [controlView addSubview:buttonPlay];
+    _buttonPlay = [UIButton buttonWithType:UIButtonTypeCustom];
+    _buttonPlay.frame = CGRectMake(leftMargin02, topMargin02, (kScreenWidth - leftMargin02 * 2), height02);
+    [_buttonPlay setBackgroundImage:[UIImage imageNamed:@"ic_player_pause_off.png"] forState:UIControlStateNormal];
+    [_buttonPlay setBackgroundImage:[UIImage imageNamed:@"ic_player_pause_off_highlight.png"] forState:UIControlStateHighlighted];
+    [_buttonPlay setBackgroundImage:[UIImage imageNamed:@"ic_player_pause_on.png"] forState:UIControlStateSelected];
+    [_buttonPlay addTarget:self action:@selector(buttonPlayClicked:) forControlEvents:UIControlEventTouchUpInside];
+    [controlView addSubview:_buttonPlay];
     
     // 显示剩余时间的label
-    _timeLabel = [[UILabel alloc] initWithFrame:CGRectMake(leftMargin02 + 10, topMargin02, width02 - 60, height02)];
-    _timeLabel.backgroundColor = [UIColor clearColor];
-    _timeLabel.text = @"流金岁月";
-    _timeLabel.font = [UIFont systemFontOfSize:14.0f];
-    [controlView addSubview:_timeLabel];
-    //显示歌手和专辑名
+    _labelTime = [[UILabel alloc] initWithFrame:CGRectMake(leftMargin02 + 10, topMargin02, width02 - 60, height02)];
+    _labelTime.backgroundColor = [UIColor clearColor];
+    _labelTime.text = @"00:00";
+    _labelTime.textAlignment = NSTextAlignmentCenter;
+    _labelTime.font = [UIFont systemFontOfSize:14.0f];
+    [controlView addSubview:_labelTime];
     
+    //显示歌手和歌曲名
+    _labelSinger = [[UILabel alloc] initWithFrame:CGRectMake(0, 45, 320, 20)];
+    _labelSinger.backgroundColor = [UIColor clearColor];
+    _labelSinger.textAlignment = NSTextAlignmentCenter;
+    _labelSinger.textColor = [UIColor grayColor];
+    _labelSinger.text = @"曲婉婷";
+    [controlView addSubview:_labelSinger];
+    
+    _labelSongName = [[UILabel alloc] initWithFrame:CGRectMake(0, 65, 320, 20)];
+    _labelSongName.backgroundColor = [UIColor clearColor];
+    _labelSongName.textAlignment = NSTextAlignmentCenter;
+    _labelSongName.textColor = [UIColor grayColor];
+    _labelSongName.text = @"梦中只有你";
+    [controlView addSubview:_labelSongName];
+    
+    // 底部bar显示隐藏的临界点
+    _keyHeightToMove =  controlView.frame.size.height - 85 - (44 - 20) / 2;
+    NSLog(@"%f", _keyHeightToMove);
+    
+    //KVO  无法监听运动中的view的属性
+//    [self addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew context:nil];
 }
+
 
 - (void)buttonRightClicked
 {
@@ -139,15 +161,16 @@
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"开始");
+    //NSLog(@"开始");
     UITouch *touch = [[touches allObjects] objectAtIndex:0];
     CGPoint point = [touch locationInView:_imageView];
+    //NSLog(@"---%@", NSStringFromCGPoint(point));
     //判断是否是imageView里面的点
     //判断点击位置在父视图的父视图的位置
-    if (CGRectContainsPoint(_imageView.frame, point)) {
+    if (CGRectContainsPoint(_imageView.bounds, point)) {
         CGPoint superPoint = [touch locationInView:self];
-        oldY = superPoint.y;
-        isDrag = YES;
+        _oldY = superPoint.y;
+        _isDrag = YES;
     }
     
     // 背景色改变
@@ -157,23 +180,45 @@
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"移动");
+    //NSLog(@"移动");
     UITouch *touch = [[touches allObjects] objectAtIndex:0];
     CGPoint point = [touch locationInView:_imageView];
     //判断是否是imageView里面的点
     //判断点击位置在父视图的父视图的位置
-    if (CGRectContainsPoint(_imageView.frame, point)) {
-        CGPoint superPoint = [touch locationInView:self];
-        currentY = superPoint.y;
+    CGPoint superPoint;
+    if (CGRectContainsPoint(_imageView.bounds, point)) {
+        superPoint = [touch locationInView:self];
+        _currentY = superPoint.y;
     }
-    if (isDrag) {
-        self.center = CGPointMake(self.center.x, self.center.y + (currentY - oldY));
+   // NSLog(@"point:%@  superPoint:%@", NSStringFromCGPoint(point), NSStringFromCGPoint(superPoint));
+    
+    //判断是否隐藏底部bar
+    [self shouldBottomViewShow];
+    
+    if (_isDrag) {
+              
+        //判断拖动是否移动的判断
+        if (self.frame.origin.y <= 0 && (_currentY - _oldY) < 0) {
+            self.frame = self.superview.bounds;
+            //NSLog(@"%@", NSStringFromCGRect(self.frame));
+            //return;
+        } else {
+            self.center = CGPointMake(self.center.x, self.center.y + (_currentY - _oldY));
+        }
     }
 }
+
+
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSLog(@"移动结束");
-    isDrag = NO;
+    //NSLog(@"移动结束");
+    
+    _isDrag = NO;
+    
+    //判断是否隐藏底部bar
+    [self shouldBottomViewShow];
+  
+    
     if (self.frame.origin.y < kAnimationDirectionHeightToTop) {
         //往上运动
         [self animationUp];
@@ -183,8 +228,31 @@
     }
 }
 
+- (void)shouldBottomViewShow
+{
+    //判断是否隐藏底部bar
+    if (self.frame.origin.y > _keyHeightToMove) {
+        [self showBottomBar:YES];
+    } else {
+        [self showBottomBar:NO];
+    }
+
+}
+
 - (void)animationUp
 {
+    //延迟时间计算
+    CGFloat delayTime = (self.frame.size.height - kAnimationDirectionHeightToTop) * 1.0f / self.frame.size.height * 0.5;
+    
+    if  (self.frame.origin.y > kAnimationDirectionHeightToTop) {
+        [UIView animateWithDuration:0 delay:delayTime options:UIViewAnimationOptionAllowAnimatedContent animations:^{
+            self.alpha = 0.99f;
+        } completion:^(BOOL finish) {
+            [self showBottomBar:NO];
+            self.alpha = 1.0f;
+        }];
+    }
+
     //往上运动
     [UIView animateWithDuration:0.5 animations:^{
         self.frame = self.superview.frame;
@@ -195,10 +263,60 @@
 {
     //往下运动
     [UIView animateWithDuration:0.5 animations:^{
-        self.frame = CGRectMake(0, kScreenHeight - 20 - 44, kScreenWidth, self.frame.size.height);
+        self.frame = CGRectMake(0, kScreenHeight - 20, kScreenWidth, self.frame.size.height);
     } completion:^(BOOL finish) {
         //self.backgroundColor = [UIColor clearColor];
     }];
+    NSLog(@"%@", NSStringFromCGRect(self.frame));
+}
+
+// 运动到某个临界点
+- (void)showBottomBar:(BOOL)flag
+{
+    if (_delegate && [_delegate respondsToSelector:@selector(showBottomView:)]) {
+        [_delegate showBottomView:flag];
+    }
+}
+
+
+// 缓冲等待时间动画
+- (void)imageAnimationStart
+{
+//    static int i = 0;
+//    //让一张图片旋转
+//    NSLog(@"%d", i);
+//    [UIView animateWithDuration:0.1 animations:^{
+//        self.imageView.transform = CGAffineTransformMakeRotation(i * (M_PI / 180.0f));
+//    }completion:^(BOOL finish) {
+//        if (_rotation) {
+//            i += 10;
+//            [self imageAnimationStart];
+//        } else {
+//            i = 0;
+//            self.imageView.transform = CGAffineTransformMakeRotation(0);
+//        }
+//    }];
+    
+    self.imageView.image = [UIImage imageNamed:@"bg_player_cover_loading.png"];
+
+    _timer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(imageAnimation) userInfo:nil repeats:YES];
+    //NSLog(@"timerRetainCount:%d", _timer.retainCount);
+}
+
+- (void)imageAnimation
+{
+    static int i = 0;
+    [UIView animateWithDuration:0.1 animations:^{
+        self.imageView.transform = CGAffineTransformMakeRotation(i * (M_PI / 180.0f));
+     }];
+    i += 10;
+}
+
+- (void)imageAnimationStop
+{
+    [_timer invalidate];
+    _timer = nil;
+    self.imageView.transform = CGAffineTransformMakeRotation(0);
 }
 
 /*

@@ -6,7 +6,7 @@
 //  Copyright (c) 2013年 apple. All rights reserved.
 //
 
-#define kPath  [NSHomeDirectory() stringByAppendingPathComponent:@"tmp"]
+#define kPath  [NSHomeDirectory() stringByAppendingPathComponent:@"tmp/fmmusic"]
 
 
 #import "YXDownloadAssistant.h"
@@ -99,7 +99,14 @@ static YXDownloadAssistant *instance;
         //NSLog(@"filepath:%@",filepath);
         
         NSFileManager *filemanager = [NSFileManager defaultManager];
-        [filemanager createFileAtPath:filepath contents:nil attributes:nil];
+        
+        if (![filemanager fileExistsAtPath:kPath]) {
+            [filemanager createDirectoryAtPath:kPath withIntermediateDirectories:NO attributes:nil error:nil];
+        }
+        
+        if ([filemanager createFileAtPath:filepath contents:nil attributes:nil]) {
+            NSLog(@"创建成功");
+        }
         
         _fileHandle = [NSFileHandle fileHandleForWritingAtPath:filepath];
         [_fileHandle retain];
@@ -123,6 +130,7 @@ static YXDownloadAssistant *instance;
     if (_delegate && [_delegate respondsToSelector:@selector(songDidFinishLoading:)]) {
         [_delegate songDidFinishLoading:url];
     }
+    
     
     [self clearResource];
     // 继续下载

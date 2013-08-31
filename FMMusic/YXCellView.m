@@ -28,7 +28,7 @@
 - (void)initView
 {
     self.layer.cornerRadius = 3;
-    self.backgroundColor = [UIColor greenColor];
+    self.backgroundColor = [UIColor colorWithRed:68.0/255 green:144.0/255 blue:120.0/255 alpha:1];
 
     self.label01 = [[UILabel alloc] initWithFrame:CGRectMake(kMarginWidth, kMarginWidth, self.frame.size.width - kMarginWidth * 2, kHeight01)];
     //self.label01.text = @"测试";

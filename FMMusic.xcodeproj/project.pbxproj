@@ -187,8 +187,6 @@
 		18ACE0A217CB93AF004EC582 /* YXViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18ACE0A117CB93AF004EC582 /* YXViewController.xib */; };
 		18ACE0A517CB9702004EC582 /* YXCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 18ACE0A417CB9702004EC582 /* YXCellView.m */; };
 		18ACE0A817CB9E56004EC582 /* YXMusicPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 18ACE0A717CB9E56004EC582 /* YXMusicPlayerView.m */; };
-		18ACE0AA17CC3B30004EC582 /* Reveal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18ACE0A917CC3B30004EC582 /* Reveal.framework */; };
-		18ACE0AC17CC3B41004EC582 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18ACE0AB17CC3B41004EC582 /* CFNetwork.framework */; };
 		18ACE0AE17CC3C1B004EC582 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18ACE0AD17CC3C1B004EC582 /* QuartzCore.framework */; };
 		18D66EDD17CC47BE0031D276 /* YXBottomView.m in Sources */ = {isa = PBXBuildFile; fileRef = 18D66EDC17CC47BE0031D276 /* YXBottomView.m */; };
 /* End PBXBuildFile section */
@@ -385,8 +383,6 @@
 		18ACE0A417CB9702004EC582 /* YXCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YXCellView.m; sourceTree = "<group>"; };
 		18ACE0A617CB9E56004EC582 /* YXMusicPlayerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YXMusicPlayerView.h; sourceTree = "<group>"; };
 		18ACE0A717CB9E56004EC582 /* YXMusicPlayerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YXMusicPlayerView.m; sourceTree = "<group>"; };
-		18ACE0A917CC3B30004EC582 /* Reveal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Reveal.framework; sourceTree = "<group>"; };
-		18ACE0AB17CC3B41004EC582 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		18ACE0AD17CC3C1B004EC582 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		18D66EDB17CC47BE0031D276 /* YXBottomView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YXBottomView.h; sourceTree = "<group>"; };
 		18D66EDC17CC47BE0031D276 /* YXBottomView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YXBottomView.m; sourceTree = "<group>"; };
@@ -399,11 +395,9 @@
 			files = (
 				1856D42A17CDA3EE00CB7FFD /* AVFoundation.framework in Frameworks */,
 				18ACE0AE17CC3C1B004EC582 /* QuartzCore.framework in Frameworks */,
-				18ACE0AC17CC3B41004EC582 /* CFNetwork.framework in Frameworks */,
 				1840BED917CB7D140015270F /* UIKit.framework in Frameworks */,
 				1840BEDB17CB7D140015270F /* Foundation.framework in Frameworks */,
 				1840BEDD17CB7D140015270F /* CoreGraphics.framework in Frameworks */,
-				18ACE0AA17CC3B30004EC582 /* Reveal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,8 +410,6 @@
 				1856D42917CDA3EE00CB7FFD /* AVFoundation.framework */,
 				1855CA4E17CCC54000C77951 /* JSONKit */,
 				18ACE0AD17CC3C1B004EC582 /* QuartzCore.framework */,
-				18ACE0AB17CC3B41004EC582 /* CFNetwork.framework */,
-				18ACE0A917CC3B30004EC582 /* Reveal.framework */,
 				1840BEDE17CB7D140015270F /* FMMusic */,
 				1840BED717CB7D140015270F /* Frameworks */,
 				1840BED617CB7D140015270F /* Products */,

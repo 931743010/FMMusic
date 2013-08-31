@@ -13,4 +13,14 @@
 
 //@property (nonatomic, assign) YXViewController *viewController;
 
+@property (nonatomic, retain) UILabel *labelSongName;
+
+@property (nonatomic, retain) UIImageView *imageView;
+
+- (void)imageViewAnimationStart;
+
+- (void)imageViewAnimationStop;
+
+
+
 @end

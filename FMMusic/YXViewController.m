@@ -30,11 +30,15 @@
 #import "YXBottomView.h"
 #import "YXDataManager.h"
 #import "YXPlayerAssistant.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface YXViewController ()
 {
     YXDataManager *_dataManager;
     YXPlayerAssistant *_playerAssistant;
+    YXBottomView *_bottomView;
+    
+    BOOL _isImageViewAnimating; //判断等待动画是否在运行
 }
 
 @end
@@ -48,6 +52,8 @@
     _dataManager = [YXDataManager defaultManager];
     _playerAssistant = [YXPlayerAssistant defaultAssistant];
     _playerAssistant.delegate = self;
+    [YXDownloadAssistant defaultAssistant].delegate = _playerAssistant;
+    _isImageViewAnimating = NO;
     
     [self addTopBar];
     [self addScrollView];
@@ -73,7 +79,7 @@
     // 添加scrollView
     _scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 44, 320, kScreenHeight - kTopViewHeight - kStatusBarHeight)];
 //    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:self.view.frame];
-    _scrollView.backgroundColor = [UIColor colorWithRed:0.7 green:0.3 blue:0.5 alpha:1];
+    _scrollView.backgroundColor = [UIColor blackColor];
     
     //计算高度
     NSInteger rows = (channelArray.count + 1) / 2;
@@ -111,7 +117,8 @@
 - (void)addMusicPlayerView
 {
     _musicPlayerView = [[YXMusicPlayerView alloc] initWithFrame:CGRectMake(0, kScreenHeight - kStatusBarHeight, kScreenWidth, kScreenHeight - kStatusBarHeight)];
-    _musicPlayerView.backgroundColor = [UIColor redColor];
+    _musicPlayerView.backgroundColor = [UIColor blackColor];
+    _musicPlayerView.delegate = self;
     [self.view addSubview:_musicPlayerView];
 }
 
@@ -126,12 +133,12 @@
 
 - (void)addBottomView
 {
-    YXBottomView *bottomView = [[YXBottomView alloc] initWithFrame:CGRectMake(0, kScreenHeight - kStatusBarHeight - 44, kScreenWidth, 44)];
+    _bottomView = [[YXBottomView alloc] initWithFrame:CGRectMake(0, kScreenHeight - kStatusBarHeight - 44, kScreenWidth, 44)];
     //bottomView.viewController = self;
-    [self.view addSubview:bottomView];
+    [self.view addSubview:_bottomView];
     // 添加手势
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(bottomViewTappd)];
-    [bottomView addGestureRecognizer:tapGestureRecognizer];
+    [_bottomView addGestureRecognizer:tapGestureRecognizer];
     
 }
 
@@ -152,18 +159,88 @@
     //弹出播放界面
     [_musicPlayerView animationUp];
     
+    //等待动画
+    
     //下载...
     [_playerAssistant loadMusicWithChannelId:channelIndex];
 
-
 }
+
 
 #pragma mark - YXPlayerAssistantDelegate
 - (void)showSongInfo:(NSDictionary *)songInfo
 {
     _musicPlayerView.imageView.image = [songInfo valueForKey:@"image"];
     
-    _musicPlayerView.timeLabel.text = [NSString stringWithFormat:@"%@",[songInfo valueForKey:@"length"]];
+    _musicPlayerView.labelSinger.text = [songInfo valueForKey:@"artist"];
+    
+    _musicPlayerView.labelSongName.text = [songInfo valueForKey:@"title"];
+    _bottomView.labelSongName.text = [songInfo valueForKey:@"title"];
+}
+
+- (void)showLeftTime:(NSString *)time
+{
+    _musicPlayerView.labelTime.text = time;
+}
+
+- (void)startToPlay
+{
+    _musicPlayerView.buttonPlay.selected = YES;
+    
+    if (_isImageViewAnimating) {
+        [_musicPlayerView imageAnimationStop];
+        _isImageViewAnimating = NO;
+    }
+//    [self performSelector:@selector(delayToo) withObject:nil afterDelay:0.11];
+    
+}
+
+
+- (void)nextSongButtonClicked
+{
+    //_musicPlayerView.buttonPlay.selected = NO;
+
+    //_musicPlayerView.imageView.image = [UIImage imageNamed:@"bg_player_cover_loading.png"];
+    //if (_musicPlayerView.rotation == NO) {
+        //[self performSelector:@selector(delayFunc) withObject:nil afterDelay:0.11];
+    //}
+    if (!_isImageViewAnimating) {
+        [_musicPlayerView imageAnimationStart];
+        _isImageViewAnimating = YES;
+    }
+    
+}
+
+
+- (void)play
+{
+    [_bottomView imageViewAnimationStart];
+}
+
+- (void)pause
+{
+    [_bottomView imageViewAnimationStop];
+}
+
+- (void)waitForDownload
+{
+    // 设置等待动画
+    if (!_isImageViewAnimating) {
+        [_musicPlayerView imageAnimationStart];
+        _isImageViewAnimating = YES;
+    }
+    
+    
+}
+
+#pragma  mark - YXMusicPlayerViewDelegate
+- (void)showBottomView:(BOOL)flag
+{
+    if (flag) {
+        _bottomView.hidden = NO;
+    } else {
+        _bottomView.hidden = YES;
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -171,5 +248,6 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
 
 @end

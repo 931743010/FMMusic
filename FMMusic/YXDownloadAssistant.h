@@ -28,6 +28,7 @@
 
 @protocol YXDownloadAssistantDelegate <NSObject>
 
+@optional
 - (void)songDidFinishLoading:(NSURL *)songUrl;
 
 @end
